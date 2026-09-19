@@ -298,6 +298,51 @@
             transition: color 0.15s;
         }
         .logout-btn:hover { color: var(--danger); }
+
+        /* ─── SUBMENU ───────────────────────────────────────── */
+        .nav-item-parent {
+            justify-content: flex-start;
+        }
+        .nav-chevron {
+            margin-left: auto;
+            font-size: 1rem;
+            color: var(--text-muted);
+            transition: transform 0.25s ease;
+            display: inline-block;
+        }
+        .nav-item-parent.open .nav-chevron {
+            transform: rotate(90deg);
+        }
+        .nav-submenu {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .nav-submenu.open {
+            max-height: 200px;
+        }
+        .nav-subitem {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.5rem 0.75rem 0.5rem 2.25rem;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+            text-decoration: none;
+            margin-bottom: 2px;
+        }
+        .nav-subitem:hover {
+            background: rgba(255,255,255,0.05);
+            color: var(--text-primary);
+        }
+        .nav-subitem.active {
+            color: #a5b4fc;
+            background: rgba(99,102,241,0.1);
+        }
     </style>
 </head>
 <body>
@@ -362,15 +407,28 @@
             </a>
         </div>
 
-        {{-- Reports --}}
+        {{-- Reports / Settings --}}
         <div class="sidebar-section">
             <div class="sidebar-section-label">Insights</div>
             <a href="#" class="nav-item">
                 <span class="nav-icon">📈</span> Reports
             </a>
-            <a href="#" class="nav-item">
+        </div>
+
+        {{-- Settings --}}
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">Settings</div>
+            <a href="#" class="nav-item nav-item-parent {{ request()->routeIs('settings.*') ? 'active' : '' }}"
+               onclick="toggleSubmenu(this)" id="settings-toggle">
                 <span class="nav-icon">⚙️</span> Settings
+                <span class="nav-chevron" id="settings-chevron">›</span>
             </a>
+            <div class="nav-submenu {{ request()->routeIs('settings.*') ? 'open' : '' }}" id="settings-submenu">
+                <a href="{{ route('settings.company') }}"
+                   class="nav-subitem {{ request()->routeIs('settings.company') ? 'active' : '' }}">
+                    🏢 Company Setup
+                </a>
+            </div>
         </div>
 
         {{-- User footer --}}
@@ -427,5 +485,23 @@
     </div>
 
 </div>
+
+<script>
+function toggleSubmenu(el) {
+    const submenu = document.getElementById('settings-submenu');
+    const chevron = document.getElementById('settings-chevron');
+    const isOpen  = submenu.classList.contains('open');
+    submenu.classList.toggle('open', !isOpen);
+    el.classList.toggle('open', !isOpen);
+}
+
+// Auto-open submenu if a child route is active on page load
+document.addEventListener('DOMContentLoaded', function () {
+    const submenu = document.getElementById('settings-submenu');
+    if (submenu && submenu.classList.contains('open')) {
+        document.getElementById('settings-toggle').classList.add('open');
+    }
+});
+</script>
 </body>
 </html>
