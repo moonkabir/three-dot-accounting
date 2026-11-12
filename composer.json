@@ -44,8 +44,10 @@
             "npm run build"
         ],
         "dev": [
-            "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -c \"#93c5fd,#c4b5fd,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"npm run dev\" --names='server,queue,vite'"
+            "php8.3 artisan serve"
+        ],
+        "serve": [
+            "php8.3 artisan serve"
         ],
         "test": [
             "@php artisan config:clear --ansi",
