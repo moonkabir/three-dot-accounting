@@ -196,4 +196,62 @@ class AccountingSystemTest extends TestCase
         $cashResponse->assertStatus(200);
         $cashResponse->assertSee('Cash & Bank Journal');
     }
+
+    public function test_pos_terminal_screen_and_checkout_sale(): void
+    {
+        // 1. POS Terminal renders
+        $posResponse = $this->actingAs($this->user)->get('/pos');
+        $posResponse->assertStatus(200);
+        $posResponse->assertSee('POS Terminal');
+        $posResponse->assertSee('COMPLETE SALE');
+
+        // 2. Create item for POS sale
+        $item = Item::create([
+            'name' => 'POS Cold Soda',
+            'sku' => 'SODA-' . time(),
+            'unit' => 'can',
+            'cost_price' => 0.80,
+            'selling_price' => 1.50,
+            'stock_quantity' => 50,
+            'alert_quantity' => 5,
+            'status' => 'active',
+        ]);
+
+        // 3. Perform POS Checkout via JSON API
+        $checkoutResponse = $this->actingAs($this->user)->postJson('/pos/checkout', [
+            'customer_name' => 'Counter Walk-in',
+            'discount' => 0.50,
+            'tax' => 0.00,
+            'paid_amount' => 10.00,
+            'payment_method' => 'cash',
+            'items' => [
+                [
+                    'item_id' => $item->id,
+                    'quantity' => 3,
+                    'unit_price' => 1.50,
+                ]
+            ],
+        ]);
+
+        $checkoutResponse->assertStatus(200);
+        $checkoutResponse->assertJson([
+            'success' => true,
+            'grand_total' => 4.00, // (3 * 1.50) - 0.50 = 4.00
+            'paid_amount' => 4.00,
+            'due_amount' => 0.00,
+        ]);
+
+        $billId = $checkoutResponse->json('bill_id');
+        $this->assertNotNull($billId);
+
+        // 4. Verify inventory was decremented by 3
+        $item->refresh();
+        $this->assertEquals(47, (float) $item->stock_quantity);
+
+        // 5. Test thermal receipt endpoint
+        $receiptResponse = $this->actingAs($this->user)->get('/pos/receipt/' . $billId);
+        $receiptResponse->assertStatus(200);
+        $receiptResponse->assertSee('POS Cold Soda');
+        $receiptResponse->assertSee('TOTAL PAYABLE');
+    }
 }

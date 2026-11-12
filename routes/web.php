@@ -5,6 +5,7 @@ use App\Http\Controllers\CustomerBillController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ItemController;
+use App\Http\Controllers\PosController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\VendorBillController;
@@ -26,6 +27,13 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::middleware('auth')->group(function () {
     // 1. Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // 1.5. POS (Point of Sale) System
+    Route::prefix('pos')->name('pos.')->group(function () {
+        Route::get('/', [PosController::class, 'index'])->name('index');
+        Route::post('/checkout', [PosController::class, 'checkout'])->name('checkout');
+        Route::get('/receipt/{customerBill}', [PosController::class, 'receipt'])->name('receipt');
+    });
 
     // 2. Inventory Management
     Route::prefix('inventory')->name('inventory.')->group(function () {

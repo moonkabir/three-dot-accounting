@@ -186,9 +186,9 @@ class CustomerBillController extends Controller
             }
 
             // Log customer payment if paid > 0
-            if ($paidAmount > 0 && $customer) {
+            if ($paidAmount > 0) {
                 CustomerPayment::create([
-                    'customer_id' => $customer->id,
+                    'customer_id' => $customer ? $customer->id : null,
                     'customer_bill_id' => $bill->id,
                     'payment_date' => $bill->bill_date,
                     'amount' => $paidAmount,
