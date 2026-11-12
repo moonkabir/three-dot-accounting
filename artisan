@@ -1,6 +1,10 @@
 #!/usr/bin/env php
 <?php
 
+if (!extension_loaded('pdo_sqlite') && file_exists('/usr/bin/php8.3')) {
+    pcntl_exec('/usr/bin/php8.3', array_merge([__FILE__], array_slice($_SERVER['argv'], 1)));
+}
+
 use Illuminate\Foundation\Application;
 use Symfony\Component\Console\Input\ArgvInput;
 
